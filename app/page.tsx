@@ -32,8 +32,8 @@ export default async function TableDesSavoirsDashboard() {
 
     }
 
-    const score = Number(entry["Score /10"] || 0);
-    const bonus = Number(entry["Bonus /3"] || 0);
+    const score = Number(entry["Score"] || 0);
+    const bonus = Number(entry["Bonus"] || 0);
     const total = Number(entry["Total"] || 0);
 
     joueursMap[joueur].totalScore += score;
