@@ -85,9 +85,9 @@ export default async function TableDesSavoirsDashboard() {
 
   }));
 
-  const classement = [...joueurs].sort(
-    (a: any, b: any) => b.totalMois - a.totalMois
-  );
+const classement = [...joueurs].sort(
+  (a: any, b: any) => Number(b.score) - Number(a.score)
+);
 
   const totalParties = joueurs.reduce(
     (acc: number, j: any) => acc + j.parties,
