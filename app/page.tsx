@@ -51,19 +51,44 @@ export default async function TableDesSavoirsDashboard() {
     // Calcul du total du mois actuel
 
    const dateEntry = entry["Date"];
+
 if (dateEntry) {
 
-  const maintenant = new Date();
+  const moisFrancais: any = {
+    janvier: 0,
+    février: 1,
+    mars: 2,
+    avril: 3,
+    mai: 4,
+    juin: 5,
+    juillet: 6,
+    août: 7,
+    septembre: 8,
+    octobre: 9,
+    novembre: 10,
+    décembre: 11,
+  };
 
-  const dateQuiz = new Date(dateEntry);
+  const morceaux = dateEntry
+    .toLowerCase()
+    .split(" ");
 
-  if (
-    !isNaN(dateQuiz.getTime()) &&
-    dateQuiz.getMonth() === maintenant.getMonth() &&
-    dateQuiz.getFullYear() === maintenant.getFullYear()
-  ) {
+  if (morceaux.length === 3) {
 
-    joueursMap[joueur].totalMois += score;
+    const jour = Number(morceaux[0]);
+    const mois = moisFrancais[morceaux[1]];
+    const annee = Number(morceaux[2]);
+
+    const maintenant = new Date();
+
+    if (
+      mois === maintenant.getMonth() &&
+      annee === maintenant.getFullYear()
+    ) {
+
+      joueursMap[joueur].totalMois += score;
+
+    }
 
   }
 
