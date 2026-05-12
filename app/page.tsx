@@ -15,6 +15,14 @@ export default async function TableDesSavoirsDashboard() {
 
   const joueursMap: any = {};
 
+  const moisActuel = new Date().toLocaleDateString("fr-FR", {
+    month: "long",
+    year: "numeric",
+  });
+
+  const moisCapitalized =
+    moisActuel.charAt(0).toUpperCase() + moisActuel.slice(1);
+
   scores.forEach((entry: any) => {
 
     const joueur = entry.Joueur;
@@ -24,40 +32,61 @@ export default async function TableDesSavoirsDashboard() {
       joueursMap[joueur] = {
         nom: joueur,
         totalScore: 0,
-        totalBonus: 0,
-        totalCombined: 0,
         parties: 0,
         meilleur: 0,
+        totalMois: 0,
       };
 
     }
 
     const score = Number(entry["Score"] || 0);
-    const bonus = Number(entry["Bonus"] || 0);
-    const total = Number(entry["Total"] || 0);
 
     joueursMap[joueur].totalScore += score;
-    joueursMap[joueur].totalBonus += bonus;
-    joueursMap[joueur].totalCombined += total;
     joueursMap[joueur].parties += 1;
 
     if (score > joueursMap[joueur].meilleur) {
       joueursMap[joueur].meilleur = score;
     }
 
+    // Calcul du total du mois actuel
+
+    const dateEntry = entry["Date"];
+
+    if (dateEntry) {
+
+      const dateTexte = new Date(dateEntry);
+
+      const maintenant = new Date();
+
+      if (
+        dateTexte.getMonth() === maintenant.getMonth() &&
+        dateTexte.getFullYear() === maintenant.getFullYear()
+      ) {
+
+        joueursMap[joueur].totalMois += score;
+
+      }
+
+    }
+
   });
 
   const joueurs = Object.values(joueursMap).map((j: any) => ({
+
     nom: j.nom,
+
     score: (j.totalScore / j.parties).toFixed(1),
-    bonus: (j.totalBonus / j.parties).toFixed(1),
-    total: (j.totalCombined / j.parties).toFixed(1),
+
     parties: j.parties,
+
     meilleur: j.meilleur,
+
+    totalMois: j.totalMois,
+
   }));
 
   const classement = [...joueurs].sort(
-    (a: any, b: any) => Number(b.score) - Number(a.score)
+    (a: any, b: any) => b.totalMois - a.totalMois
   );
 
   const totalParties = joueurs.reduce(
@@ -88,11 +117,11 @@ export default async function TableDesSavoirsDashboard() {
           <div className="bg-zinc-900 border border-zinc-800 rounded-3xl px-6 py-4 shadow-2xl">
 
             <p className="text-zinc-400 text-sm">
-              Mise à jour automatique
+              Saison actuelle
             </p>
 
             <p className="text-2xl font-bold">
-              Google Sheets connecté
+              {moisCapitalized}
             </p>
 
           </div>
@@ -156,11 +185,11 @@ export default async function TableDesSavoirsDashboard() {
           <div className="flex items-center justify-between mb-6">
 
             <h2 className="text-3xl font-bold">
-              Classement Général
+              Classement Mensuel
             </h2>
 
             <div className="bg-zinc-800 rounded-2xl px-4 py-2 text-sm text-zinc-300">
-              Live
+              {moisCapitalized}
             </div>
 
           </div>
@@ -176,8 +205,7 @@ export default async function TableDesSavoirsDashboard() {
                   <th className="pb-4">#</th>
                   <th className="pb-4">Joueur</th>
                   <th className="pb-4">Score moyen</th>
-                  <th className="pb-4">Bonus moyen</th>
-                  <th className="pb-4">Total moyen</th>
+                  <th className="pb-4">Total du mois</th>
                   <th className="pb-4">Parties</th>
                   <th className="pb-4">Meilleur score</th>
 
@@ -229,12 +257,8 @@ export default async function TableDesSavoirsDashboard() {
 
                     </td>
 
-                    <td className="py-5 font-semibold">
-                      {joueur.bonus}/3
-                    </td>
-
-                    <td className="py-5 font-semibold">
-                      {joueur.total}
+                    <td className="py-5 font-bold text-xl">
+                      {joueur.totalMois}
                     </td>
 
                     <td className="py-5">
