@@ -50,24 +50,35 @@ export default async function TableDesSavoirsDashboard() {
 
     // Calcul du total du mois actuel
 
-    const dateEntry = entry["Date"];
+   const dateEntry = entry["Date"];
 
-    if (dateEntry) {
+if (dateEntry) {
 
-      const dateTexte = new Date(dateEntry);
+  const maintenant = new Date();
 
-      const maintenant = new Date();
+  const moisActuel = maintenant.getMonth() + 1;
+  const anneeActuelle = maintenant.getFullYear();
 
-      if (
-        dateTexte.getMonth() === maintenant.getMonth() &&
-        dateTexte.getFullYear() === maintenant.getFullYear()
-      ) {
+  const morceaux = dateEntry.split("/");
 
-        joueursMap[joueur].totalMois += score;
+  if (morceaux.length === 3) {
 
-      }
+    const jour = Number(morceaux[0]);
+    const mois = Number(morceaux[1]);
+    const annee = Number(morceaux[2]);
+
+    if (
+      mois === moisActuel &&
+      annee === anneeActuelle
+    ) {
+
+      joueursMap[joueur].totalMois += score;
 
     }
+
+  }
+
+}
 
   });
 
@@ -88,6 +99,7 @@ export default async function TableDesSavoirsDashboard() {
 const classement = [...joueurs].sort(
   (a: any, b: any) => Number(b.score) - Number(a.score)
 );
+
 
   const totalParties = joueurs.reduce(
     (acc: number, j: any) => acc + j.parties,
