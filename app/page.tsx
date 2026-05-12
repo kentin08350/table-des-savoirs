@@ -56,25 +56,15 @@ if (dateEntry) {
 
   const maintenant = new Date();
 
-  const moisActuel = maintenant.getMonth() + 1;
-  const anneeActuelle = maintenant.getFullYear();
+  const dateQuiz = new Date(dateEntry);
 
-  const morceaux = dateEntry.split("/");
+  if (
+    !isNaN(dateQuiz.getTime()) &&
+    dateQuiz.getMonth() === maintenant.getMonth() &&
+    dateQuiz.getFullYear() === maintenant.getFullYear()
+  ) {
 
-  if (morceaux.length === 3) {
-
-    const jour = Number(morceaux[0]);
-    const mois = Number(morceaux[1]);
-    const annee = Number(morceaux[2]);
-
-    if (
-      mois === moisActuel &&
-      annee === anneeActuelle
-    ) {
-
-      joueursMap[joueur].totalMois += score;
-
-    }
+    joueursMap[joueur].totalMois += score;
 
   }
 
