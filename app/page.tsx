@@ -51,7 +51,6 @@ export default async function TableDesSavoirsDashboard() {
     // Calcul du total du mois actuel
 
    const dateEntry = entry["Date"];
-
 if (dateEntry) {
 
   const maintenant = new Date();
