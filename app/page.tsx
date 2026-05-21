@@ -29,15 +29,28 @@ export default function Home() {
         data.forEach((entry: any) => {
 
           const joueur = String(
-            entry.Joueur || ""
-          ).trim();
+  entry.Joueur ||
+  entry.joueur ||
+  ""
+).trim();
 
-          const score = Number(entry.Score) || 0;
-          const bonus = Number(entry.Bonus) || 0;
+const score = Number(
+  entry.Score ||
+  entry.score ||
+  0
+);
 
-          const dateTexte = String(
-            entry.Date || ""
-          ).toLowerCase();
+const bonus = Number(
+  entry.Bonus ||
+  entry.bonus ||
+  0
+);
+
+const dateTexte = String(
+  entry.Date ||
+  entry.date ||
+  ""
+).toLowerCase();
 
           const moisActuel = new Date()
             .toLocaleDateString(
