@@ -1,315 +1,261 @@
-async function getScores() {
-  const response = await fetch(
-    "https://opensheet.elk.sh/1SUS5bdqapXtLbpHmh93q1l8MIHfDro2AhIMsfnDVjJA/Scores",
-    {
-      cache: "no-store",
-    }
-  );
+"use client";
 
-  return response.json();
-}
+import { useEffect, useState } from "react";
 
-export default async function TableDesSavoirsDashboard() {
+export default function Home() {
 
-  const scores = await getScores();
+  const nomsJoueurs: Record<string, string> = {
+  kentin08350: "Quentin",
+  baptiste_phaleina_b: "Batou",
+  jetrokzz: "Romain",
+  wagram92: "David",
+  fus: "Fus",
+  valrad_03dm: "Valentin",
+  desturion: "Destu",
+  papy2542: "Papy",
+  gd172005: "Junior",
+};
 
-  const joueursMap: any = {};
+  const [scores, setScores] = useState<any[]>([]);
 
-  const moisActuel = new Date().toLocaleDateString("fr-FR", {
-    month: "long",
-    year: "numeric",
-  });
+  useEffect(() => {
 
-  const moisCapitalized =
-    moisActuel.charAt(0).toUpperCase() + moisActuel.slice(1);
+    fetch("https://docs.google.com/spreadsheets/d/1SUS5bdqapXtLbpHmh93q1l8MIHfDro2AhIMsfnDVjJA/edit?gid=415154897#gid=415154897")
+      .then((res) => res.json())
+      .then((data) => {
 
-  scores.forEach((entry: any) => {
+        const joueursMap: any = {};
 
-    const joueur = entry.Joueur;
+        data.forEach((entry: any) => {
 
-    if (!joueursMap[joueur]) {
+          const joueur = String(
+            entry.Joueur || ""
+          ).trim();
 
-      joueursMap[joueur] = {
-        nom: joueur,
-        totalScore: 0,
-        parties: 0,
-        meilleur: 0,
-        totalMois: 0,
-      };
+          const score = Number(entry.Score) || 0;
+          const bonus = Number(entry.Bonus) || 0;
 
-    }
+          const dateTexte = String(
+            entry.Date || ""
+          ).toLowerCase();
 
-    const score = Number(entry["Score"] || 0);
+          const moisActuel = new Date()
+            .toLocaleDateString(
+              "fr-FR",
+              {
+                month: "long",
+                year: "numeric",
+              }
+            )
+            .toLowerCase();
 
-    joueursMap[joueur].totalScore += score;
-    joueursMap[joueur].parties += 1;
+          if (!joueursMap[joueur]) {
 
-    if (score > joueursMap[joueur].meilleur) {
-      joueursMap[joueur].meilleur = score;
-    }
+            joueursMap[joueur] = {
+              joueur,
+              parties: 0,
+              totalScore: 0,
+              totalBonus: 0,
+              totalMois: 0,
+              meilleurScore: 0,
+            };
 
-    // Calcul du total du mois actuel
+          }
 
-   const dateEntry = entry["Date"];
+          joueursMap[joueur].parties += 1;
 
-if (dateEntry) {
+          joueursMap[joueur].totalScore += score;
 
-  const moisFrancais: any = {
-    janvier: 0,
-    février: 1,
-    mars: 2,
-    avril: 3,
-    mai: 4,
-    juin: 5,
-    juillet: 6,
-    août: 7,
-    septembre: 8,
-    octobre: 9,
-    novembre: 10,
-    décembre: 11,
-  };
+          joueursMap[joueur].totalBonus += bonus;
 
-  const morceaux = dateEntry
-    .toLowerCase()
-    .split(" ");
+          if (score > joueursMap[joueur].meilleurScore) {
 
-  if (morceaux.length === 3) {
+            joueursMap[joueur].meilleurScore = score;
 
-    const jour = Number(morceaux[0]);
-    const mois = moisFrancais[morceaux[1]];
-    const annee = Number(morceaux[2]);
+          }
 
-    const maintenant = new Date();
+          if (
+            dateTexte.includes(
+              moisActuel.split(" ")[0]
+            ) &&
+            dateTexte.includes(
+              moisActuel.split(" ")[1]
+            )
+          ) {
 
-    if (
-      mois === maintenant.getMonth() &&
-      annee === maintenant.getFullYear()
-    ) {
+            joueursMap[joueur].totalMois += score;
 
-      joueursMap[joueur].totalMois += score;
+          }
 
-    }
+        });
 
-  }
+        const classement = Object.values(
+          joueursMap
+        )
+          .map((j: any) => ({
 
-}
+            joueur: j.joueur,
 
-  });
+            nomAffiche:
+              nomsJoueurs[j.joueur] ||
+              j.joueur,
 
-  const joueurs = Object.values(joueursMap).map((j: any) => ({
+            parties: j.parties,
 
-    nom: j.nom,
+            scoreMoyen:
+              (
+                j.totalScore /
+                j.parties
+              ).toFixed(1),
 
-    score: (j.totalScore / j.parties).toFixed(1),
+            totalMois: j.totalMois,
 
-    parties: j.parties,
+            meilleurScore:
+              j.meilleurScore,
 
-    meilleur: j.meilleur,
+          }))
+          .sort(
+            (a: any, b: any) =>
+              Number(b.scoreMoyen) -
+              Number(a.scoreMoyen)
+          );
 
-    totalMois: j.totalMois,
+        setScores(classement);
 
-  }));
+      });
 
-const classement = [...joueurs].sort(
-  (a: any, b: any) => Number(b.score) - Number(a.score)
-);
+  }, []);
 
-
-  const totalParties = joueurs.reduce(
-    (acc: number, j: any) => acc + j.parties,
-    0
-  );
+  const moisActuel = new Date()
+    .toLocaleDateString(
+      "fr-FR",
+      {
+        month: "long",
+        year: "numeric",
+      }
+    );
 
   return (
 
-    <div className="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-zinc-950 text-white p-6">
+    <main className="min-h-screen bg-black text-white p-8">
 
-      <div className="max-w-7xl mx-auto space-y-8">
+      <div className="max-w-6xl mx-auto">
 
-        <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex justify-between items-center mb-10">
 
-          <div>
+          <h1 className="text-5xl font-bold">
+            Classement Mensuel
+          </h1>
 
-            <h1 className="text-5xl font-black tracking-tight">
-              La Table des Savoirs
-            </h1>
-
-            <p className="text-zinc-400 mt-2 text-lg">
-              Classement live • Statistiques • Historique
-            </p>
-
+          <div className="bg-zinc-900 px-6 py-3 rounded-2xl text-xl capitalize">
+            {moisActuel}
           </div>
 
-          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl px-6 py-4 shadow-2xl">
+        </div>
 
-            <p className="text-zinc-400 text-sm">
-              Saison actuelle
-            </p>
+        <div className="bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800">
 
-            <p className="text-2xl font-bold">
-              {moisCapitalized}
-            </p>
+          <table className="w-full">
 
-          </div>
+            <thead className="bg-zinc-950 text-zinc-400">
 
-        </header>
+              <tr>
 
-        <section className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <th className="p-6 text-left">#</th>
 
-          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-xl">
+                <th className="p-6 text-left">
+                  Joueur
+                </th>
 
-            <p className="text-zinc-400 text-sm">
-              Leader actuel
-            </p>
+                <th className="p-6 text-left">
+                  Score moyen
+                </th>
 
-            <h2 className="text-3xl font-bold mt-2">
-              {classement[0]?.nom || "-"}
-            </h2>
+                <th className="p-6 text-left">
+                  Total du mois
+                </th>
 
-          </div>
+                <th className="p-6 text-left">
+                  Parties
+                </th>
 
-          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-xl">
+                <th className="p-6 text-left">
+                  Meilleur score
+                </th>
 
-            <p className="text-zinc-400 text-sm">
-              Meilleur score moyen
-            </p>
+              </tr>
 
-            <h2 className="text-3xl font-bold mt-2">
-              {classement[0]?.score || 0}/10
-            </h2>
+            </thead>
 
-          </div>
+            <tbody>
 
-          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-xl">
-
-            <p className="text-zinc-400 text-sm">
-              Parties jouées
-            </p>
-
-            <h2 className="text-3xl font-bold mt-2">
-              {totalParties}
-            </h2>
-
-          </div>
-
-          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-xl">
-
-            <p className="text-zinc-400 text-sm">
-              Nombre de joueurs
-            </p>
-
-            <h2 className="text-3xl font-bold mt-2">
-              {joueurs.length}
-            </h2>
-
-          </div>
-
-        </section>
-
-        <section className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-2xl overflow-hidden">
-
-          <div className="flex items-center justify-between mb-6">
-
-            <h2 className="text-3xl font-bold">
-              Classement Mensuel
-            </h2>
-
-            <div className="bg-zinc-800 rounded-2xl px-4 py-2 text-sm text-zinc-300">
-              {moisCapitalized}
-            </div>
-
-          </div>
-
-          <div className="overflow-x-auto">
-
-            <table className="w-full text-left">
-
-              <thead>
-
-                <tr className="border-b border-zinc-800 text-zinc-400">
-
-                  <th className="pb-4">#</th>
-                  <th className="pb-4">Joueur</th>
-                  <th className="pb-4">Score moyen</th>
-                  <th className="pb-4">Total du mois</th>
-                  <th className="pb-4">Parties</th>
-                  <th className="pb-4">Meilleur score</th>
-
-                </tr>
-
-              </thead>
-
-              <tbody>
-
-                {classement.map((joueur: any, index: number) => (
+              {scores.map(
+                (
+                  entry: any,
+                  index: number
+                ) => (
 
                   <tr
-                    key={joueur.nom}
-                    className="border-b border-zinc-800 hover:bg-zinc-800/40 transition"
+                    key={entry.joueur}
+                    className="border-t border-zinc-800"
                   >
 
-                    <td className="py-5 text-2xl font-bold">
+                    <td className="p-6 text-2xl">
 
-                      {index === 0 && "🥇"}
-                      {index === 1 && "🥈"}
-                      {index === 2 && "🥉"}
-
-                    </td>
-
-                    <td className="py-5 text-xl font-semibold">
-                      {joueur.nom}
-                    </td>
-
-                    <td className="py-5">
-
-                      <div className="flex items-center gap-3">
-
-                        <div className="w-full bg-zinc-800 rounded-full h-3">
-
-                          <div
-                            className="bg-white h-3 rounded-full"
-                            style={{
-                              width: `${Number(joueur.score) * 10}%`,
-                            }}
-                          />
-
-                        </div>
-
-                        <span className="font-bold min-w-[60px]">
-                          {joueur.score}/10
-                        </span>
-
-                      </div>
+                      {index === 0
+                        ? "🥇"
+                        : index === 1
+                        ? "🥈"
+                        : index === 2
+                        ? "🥉"
+                        : index + 1}
 
                     </td>
 
-                    <td className="py-5 font-bold text-xl">
-                      {joueur.totalMois}
+                    <td className="p-6 text-2xl font-bold">
+
+                      {entry.nomAffiche}
+
                     </td>
 
-                    <td className="py-5">
-                      {joueur.parties}
+                    <td className="p-6 text-2xl">
+
+                      {entry.scoreMoyen}/10
+
                     </td>
 
-                    <td className="py-5">
-                      {joueur.meilleur}/10
+                    <td className="p-6 text-2xl font-bold">
+
+                      {entry.totalMois}
+
+                    </td>
+
+                    <td className="p-6 text-2xl">
+
+                      {entry.parties}
+
+                    </td>
+
+                    <td className="p-6 text-2xl">
+
+                      {entry.meilleurScore}/10
+
                     </td>
 
                   </tr>
 
-                ))}
+                )
+              )}
 
-              </tbody>
+            </tbody>
 
-            </table>
+          </table>
 
-          </div>
-
-        </section>
+        </div>
 
       </div>
 
-    </div>
+    </main>
 
   );
 
