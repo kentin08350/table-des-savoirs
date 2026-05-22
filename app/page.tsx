@@ -20,122 +20,120 @@ export default function Home() {
 
   useEffect(() => {
 
-    fetch("https://docs.google.com/spreadsheets/d/1SUS5bdqapXtLbpHmh93q1l8MIHfDro2AhIMsfnDVjJA/edit?gid=415154897#gid=415154897")
-      .then((res) => res.json())
-      .then((data) => {
+    fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vQDn1mPMT3p_x1h0tJXh_y9bApI3_7M3SiO1iPuxC2t7BLK3mqURhmx7yC6tSsp8XjcLle08WUWL7f3/pub?gid=415154897&single=true&output=csv")
+  .then((res) => res.text())
+  .then((csv) => {
 
-        const joueursMap: any = {};
+    const lignes = csv.split("\n").slice(1);
 
-        data.forEach((entry: any) => {
+    const joueursMap: any = {};
 
-          const joueur = String(
-  entry.Joueur ||
-  entry.joueur ||
-  ""
-).trim();
+    lignes.forEach((ligne) => {
 
-const score = Number(
-  entry.Score ||
-  entry.score ||
-  0
-);
+      const colonnes = ligne.split(",");
 
-const bonus = Number(
-  entry.Bonus ||
-  entry.bonus ||
-  0
-);
+      const joueur = String(
+        colonnes[1] || ""
+      ).trim();
 
-const dateTexte = String(
-  entry.Date ||
-  entry.date ||
-  ""
-).toLowerCase();
+      const score = Number(
+        colonnes[4] || 0
+      );
 
-          const moisActuel = new Date()
-            .toLocaleDateString(
-              "fr-FR",
-              {
-                month: "long",
-                year: "numeric",
-              }
-            )
-            .toLowerCase();
+      const bonus = Number(
+        colonnes[5] || 0
+      );
 
-          if (!joueursMap[joueur]) {
+      const dateTexte = String(
+        colonnes[0] || ""
+      ).toLowerCase();
 
-            joueursMap[joueur] = {
-              joueur,
-              parties: 0,
-              totalScore: 0,
-              totalBonus: 0,
-              totalMois: 0,
-              meilleurScore: 0,
-            };
-
+      const moisActuel = new Date()
+        .toLocaleDateString(
+          "fr-FR",
+          {
+            month: "long",
+            year: "numeric",
           }
-
-          joueursMap[joueur].parties += 1;
-
-          joueursMap[joueur].totalScore += score;
-
-          joueursMap[joueur].totalBonus += bonus;
-
-          if (score > joueursMap[joueur].meilleurScore) {
-
-            joueursMap[joueur].meilleurScore = score;
-
-          }
-
-          if (
-            dateTexte.includes(
-              moisActuel.split(" ")[0]
-            ) &&
-            dateTexte.includes(
-              moisActuel.split(" ")[1]
-            )
-          ) {
-
-            joueursMap[joueur].totalMois += score;
-
-          }
-
-        });
-
-        const classement = Object.values(
-          joueursMap
         )
-          .map((j: any) => ({
+        .toLowerCase();
 
-            joueur: j.joueur,
+      if (!joueursMap[joueur]) {
 
-            nomAffiche:
-              nomsJoueurs[j.joueur] ||
-              j.joueur,
+        joueursMap[joueur] = {
+          joueur,
+          parties: 0,
+          totalScore: 0,
+          totalBonus: 0,
+          totalMois: 0,
+          meilleurScore: 0,
+        };
 
-            parties: j.parties,
+      }
 
-            scoreMoyen:
-              (
-                j.totalScore /
-                j.parties
-              ).toFixed(1),
+      joueursMap[joueur].parties += 1;
+      joueursMap[joueur].totalScore += score;
+      joueursMap[joueur].totalBonus += bonus;
 
-            totalMois: j.totalMois,
+      if (
+        score >
+        joueursMap[joueur].meilleurScore
+      ) {
 
-            meilleurScore:
-              j.meilleurScore,
+        joueursMap[joueur].meilleurScore =
+          score;
 
-          }))
-          .sort(
-            (a: any, b: any) =>
-              Number(b.scoreMoyen) -
-              Number(a.scoreMoyen)
-          );
+      }
 
-        setScores(classement);
+      if (
+        dateTexte.includes(
+          moisActuel.split(" ")[0]
+        ) &&
+        dateTexte.includes(
+          moisActuel.split(" ")[1]
+        )
+      ) {
 
-      });
+        joueursMap[joueur].totalMois += score;
+
+      }
+
+    });
+
+    const classement = Object.values(
+      joueursMap
+    )
+      .map((j: any) => ({
+
+        joueur: j.joueur,
+
+        nomAffiche:
+          nomsJoueurs[j.joueur] ||
+          j.joueur,
+
+        parties: j.parties,
+
+        scoreMoyen:
+          (
+            j.totalScore /
+            j.parties
+          ).toFixed(1),
+
+        totalMois: j.totalMois,
+
+        meilleurScore:
+          j.meilleurScore,
+
+      }))
+      .sort(
+        (a: any, b: any) =>
+          Number(b.scoreMoyen) -
+          Number(a.scoreMoyen)
+      );
+
+    setScores(classement);
+
+  });
 
   }, []);
 
