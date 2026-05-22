@@ -18,6 +18,13 @@ export default function Home() {
 
   const [scores, setScores] = useState<any[]>([]);
 
+  const [stats, setStats] = useState({
+  meilleurJoueur: "",
+  meilleurScore: 0,
+  totalParties: 0,
+  totalPoints: 0,
+});
+
   useEffect(() => {
 
     fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vQDn1mPMT3p_x1h0tJXh_y9bApI3_7M3SiO1iPuxC2t7BLK3mqURhmx7yC6tSsp8XjcLle08WUWL7f3/pub?gid=415154897&single=true&output=csv")
@@ -131,6 +138,21 @@ export default function Home() {
           Number(a.scoreMoyen)
       );
 
+      const meilleur = classement[0];
+
+setStats({
+  meilleurJoueur: meilleur?.nomAffiche || "-",
+  meilleurScore: Number(meilleur?.scoreMoyen || 0),
+  totalParties: classement.reduce(
+    (acc: number, j: any) => acc + j.parties,
+    0
+  ),
+  totalPoints: classement.reduce(
+    (acc: number, j: any) => acc + j.totalMois,
+    0
+  ),
+});
+
     setScores(classement);
 
   });
@@ -163,7 +185,45 @@ export default function Home() {
           </div>
 
         </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
 
+  <div className="bg-zinc-900 p-6 rounded-3xl border border-zinc-800">
+    <p className="text-zinc-400 text-sm mb-2">
+      Meilleur joueur
+    </p>
+    <h2 className="text-2xl font-bold">
+      {stats.meilleurJoueur}
+    </h2>
+  </div>
+
+  <div className="bg-zinc-900 p-6 rounded-3xl border border-zinc-800">
+    <p className="text-zinc-400 text-sm mb-2">
+      Score moyen
+    </p>
+    <h2 className="text-2xl font-bold">
+      {stats.meilleurScore}/10
+    </h2>
+  </div>
+
+  <div className="bg-zinc-900 p-6 rounded-3xl border border-zinc-800">
+    <p className="text-zinc-400 text-sm mb-2">
+      Parties jouées
+    </p>
+    <h2 className="text-2xl font-bold">
+      {stats.totalParties}
+    </h2>
+  </div>
+
+  <div className="bg-zinc-900 p-6 rounded-3xl border border-zinc-800">
+    <p className="text-zinc-400 text-sm mb-2">
+      Total des points
+    </p>
+    <h2 className="text-2xl font-bold">
+      {stats.totalPoints}
+    </h2>
+  </div>
+
+</div>
         <div className="bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800">
 
           <table className="w-full">
